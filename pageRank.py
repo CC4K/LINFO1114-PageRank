@@ -5,19 +5,7 @@
 import numpy as np
 import csv
 
-def printMatrixWithFloats(M):
-    for i in range(len(M)):
-        print("[[", end="")
-        for j in range(len(M[i])):
-            print("%.3f" % (M[i][j]), end=" ")
-        print("]]")
-def printVectorWithFloats(V):
-    print("[", end="")
-    for i in range(len(V)):
-        print("%.4f" % (V[i]), end=" ")
-    print("]")
-
-def pageRankIteratif(A, v, alpha=0.9):
+def pageRankLinear(A, v, alpha=0.9):
     """
     Algorithme de PageRank méthode linéaire
     :param A: matrice d’adjacence d’un graphe dirigé, pondéré et régulier nommé G (non-négative)
@@ -25,65 +13,14 @@ def pageRankIteratif(A, v, alpha=0.9):
     :param alpha: paramètre de téléportation α compris entre 0 et 1 (0.9 par défaut et pour les résultats à présenter)
     :return x: un vecteur contenant les scores d’importance des nœuds ordonnés dans le même ordre que la matrice d’adjacence.
     """
-    def out_pointings(A_j):
-        count = 0
-        for j in range(len(A_j)):
-            if A_j[j] != 0:
-                count += A_j[j]
-        return count
-    x = np.copy(v)
-    A_t = np.transpose(A)
-
-    for iteration in range(len(x)):
-        # formule : (1 – alpha) + alpha * ( (score lien X / nbr lien sortant de X) + ... + (score lien Z / nbr lien sortant de Z) )
-        for i in range(len(x)):
-            somme = 0
-            for j in range(len(x)):
-                if A_t[i][j] != 0:
-                    somme += ((x[j] / out_pointings(A[j])) * A_t[i][j])
-                    # print("somme += ((%f / %d) * %d)" % (x[j], out_pointings(A[j]), A_t[i][j]))
-            x[i] = (1 - alpha) + alpha * somme
-            # print("(%f) + %f * (%f) = %f" % (1-alpha, alpha, somme, x[i]))
-
-    return x
-
-def pageRankLinear(A, v, alpha=0.9):
-    """
-    Algorithme de PageRank méthode linéaire
-    :param A_p: matrice d’adjacence d’un graphe dirigé, pondéré et régulier nommé G (non-négative)
-    :param v: vecteur de personnalisation unique (non-négatif)
-    :param alpha: paramètre de téléportation α compris entre 0 et 1 (0.9 par défaut et pour les résultats à présenter)
-    :return x: un vecteur contenant les scores d’importance des nœuds ordonnés dans le même ordre que la matrice d’adjacence.
-    """
-    def out_pointings(A_j):
-        count = 0
-        for j in range(len(A_j)):
-            if A_j[j] != 0:
-                count += A_j[j]
-        return count
-    x = np.copy(v)
-    A_p = np.copy(A)
-    A_t = np.transpose(A)
-
-    # Matrice d'adjacence transposée AKA de transition (correcte)
-    for i in range(len(A_p)):
-        A_p[i] /= out_pointings(A_p[i])
-    P_t = np.transpose(A_p)
-    # printMatrixWithFloats(P_t)
-
-    # Vecteur des sommes par colonnes pondérés par somme total (jsp si utile vu qu'on nous donne un vecteur ¯\_(ツ)_/¯)
-    tot = 0
+    # Matrice de probabilités de transition P
     for i in range(len(A)):
-        tot += sum(A[i])
-    s = np.zeros(len(A_t))
-    for i in range(len(A_t)):
-        s[i] = sum(A_t[i]) / tot
+        A[i] /= np.sum(A[i])
+    P = A.T
 
-
-    for iteration in range(100):
-        x = P_t @ x
-
-    # alpha il va où FOR F*CK SAKE ?!
+    # Résoudre le système linéaire creux
+    I = np.eye(len(A), len(A))
+    x = np.linalg.solve(I - (alpha * P), v)
 
     return x
 
@@ -95,11 +32,29 @@ def pageRankPower(A, v, alpha=0.9):
     :param alpha: paramètre de téléportation α compris entre 0 et 1, α ∈]0,1[ (0.9 par défaut et pour les résultats à présenter)
     :return x: un vecteur contenant les scores d’importance des nœuds ordonnés dans le même ordre que la matrice d’adjacence.
     """
-    x = np.copy(v)
+    print("Matrice d'adjacence A =\n", A, sep="")
+
+    # Matrice de probabilités de transition P
+    for i in range(len(A)):
+        A[i] /= np.sum(A[i])
+    P = A.T
+    print("Matrice de probabilités de transition P =\n", P, sep="")
+
+    # Itérer sur la matrice G
+    x = np.ones(len(A))
+    print("Matrice Google G =\n", (alpha*P) + (1-alpha) * x, sep="")
+    for i in range(36):
+        x = ((alpha*P) @ x) + v
+        if i < 3:
+            print("Vecteur de scores à l'itération ", i, " =\n", x, sep="")
+
     return x
 
 
 if __name__ == '__main__':
+    np.set_printoptions(linewidth=120)
+
+    # Lecture de la matrice d'adjacence A à partir d'un fichier .csv
     file = open('Adjacency_matrix_A.csv')
     csvreader = csv.reader(file)
     A = np.zeros((10, 10))
@@ -109,13 +64,15 @@ if __name__ == '__main__':
         A[index] = row
         index += 1
     file.close()
+
+    # Vecteur de personnalisation
     v = np.array([0.1427, 0.0996, 0.0957, 0.1161, 0.0111, 0.2162, 0.1438, 0.0513, 0.0565, 0.067])
+
+    # Paramètre de téléportation (valeur par défaut = 0.9)
     alpha = 0.9
-    print("A = \n", A, "\nv = ", v, "\nalpha = ", alpha, sep="")
-    print("===========================================================================")
-    print("Iteratif:")
-    printVectorWithFloats(pageRankIteratif(A, v, alpha))
-    print("\nLinear:")
-    printVectorWithFloats(pageRankLinear(A, v, alpha))
-    print("\nPower:")
-    printVectorWithFloats(pageRankPower(A, v, alpha))
+
+    print("\npageRankLinear :")
+    print("Vecteur de scores x =\n", pageRankLinear(np.copy(A), np.copy(v), alpha), sep="")
+    print("===============================================================================================================")
+    print("pageRankPower :")
+    print("Vecteur de scores x final =\n", pageRankPower(np.copy(A), np.copy(v), alpha), sep="")
