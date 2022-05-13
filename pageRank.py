@@ -20,7 +20,7 @@ def pageRankLinear(A, v, alpha=0.9):
 
     # Résoudre le système linéaire creux
     I = np.eye(len(A), len(A))
-    x = np.linalg.solve(I - (alpha * P), v)
+    x = np.linalg.solve(I - (alpha * P), (1-alpha) * v)
 
     return x
 
@@ -42,9 +42,10 @@ def pageRankPower(A, v, alpha=0.9):
 
     # Itérer sur la matrice G
     x = np.ones(len(A))
-    print("Matrice Google G =\n", (alpha*P) + (1-alpha) * x, sep="")
-    for i in range(36):
-        x = ((alpha*P) @ x) + v
+    G = (alpha*P) + (1 - alpha)/len(A) # http://www.scholarpedia.org/article/Google_matrix
+    print("Matrice Google G =\n", G, sep="")
+    for i in range(190):
+        x = ((alpha * P) @ x) + ((1-alpha) * v)
         if i < 3:
             print("Vecteur de scores à l'itération ", i, " =\n", x, sep="")
 
