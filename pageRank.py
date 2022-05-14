@@ -43,9 +43,9 @@ def pageRankPower(A, v, alpha=0.9):
     if verbose: print("Matrice de probabilités de transition P =\n", P, sep="")
 
     # Itérer sur la matrice G
-    # https://mathstats.uncg.edu/sites/yasaki/publications/machado-google-pagerank-linear-algebra-project.pdf
+    # cfr cours pg 128 (chaînes de Markov) et 137 (formule matrice Google)
     x = v/sum(v)
-    G = (alpha*P) + (1-alpha)/len(A)  # http://www.scholarpedia.org/article/Google_matrix
+    G = (alpha*P) + (1-alpha)/len(A)
     if verbose: print("Matrice Google G =\n", G, sep="")
     for i in range(200):
         x = G @ x
