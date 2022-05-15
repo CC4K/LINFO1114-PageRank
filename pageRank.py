@@ -58,7 +58,7 @@ if __name__ == '__main__':
     verbose = True
 
     # Lecture de la matrice d'adjacence A à partir d'un fichier .csv
-    file = open('Adjacency_matrix_A.csv')
+    file = open('adjacency_matrix_A.csv')
     csvreader = csv.reader(file)
     A = np.zeros((10, 10))
     index = 0
