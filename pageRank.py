@@ -19,7 +19,6 @@ def pageRankLinear(A, v, alpha=0.9):
     P = A.T
 
     # Résoudre le système linéaire creux (I - alpha*P) . x = (1-alpha)*v
-    # cfr cours page 144
     I = np.eye(len(A), len(A))
     x = np.linalg.solve(I - (alpha*P), (1-alpha)*v)
     if verbose: print("Système linéaire :\n", I - (alpha*P), "\n", (1-alpha)*v, sep="")
@@ -43,7 +42,6 @@ def pageRankPower(A, v, alpha=0.9):
     if verbose: print("Matrice de probabilités de transition P =\n", P, sep="")
 
     # Itérer sur la matrice G
-    # cfr cours pg 128 (chaînes de Markov) et 137 (formule matrice Google)
     x = v/sum(v)
     G = (alpha*P) + (1-alpha)/len(A)
     if verbose: print("Matrice Google G =\n", G, sep="")
@@ -57,7 +55,7 @@ if __name__ == '__main__':
     np.set_printoptions(linewidth=150)
 
     # Verbose, changez à True pour afficher les étapes demandées pour le projet
-    verbose = False
+    verbose = True
 
     # Lecture de la matrice d'adjacence A à partir d'un fichier .csv
     file = open('Adjacency_matrix_A.csv')
@@ -76,7 +74,7 @@ if __name__ == '__main__':
     # Paramètre de téléportation (valeur par défaut = 0.9)
     alpha = 0.9
 
-    print("\npageRankLinear :")
+    print("pageRankLinear :")
     print("Vecteur de scores x =\n", pageRankLinear(np.copy(A), np.copy(v), alpha), sep="")
     print("===============================================================================================================")
     print("pageRankPower :")
